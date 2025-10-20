@@ -59,7 +59,7 @@ echo ""
 echo "Building and pushing Docker image..."
 IMAGE_TAG="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY_NAME/$IMAGE_NAME:latest"
 
-gcloud builds submit --tag $IMAGE_TAG
+gcloud builds submit . --tag $IMAGE_TAG
 
 echo "Image built and pushed"
 

@@ -2,6 +2,8 @@
 
 **Flexbone Coding Challenge Submission**
 
+> **Working Directory**: All commands in this guide should be run from the project root: `/Users/ehz/flexbone`
+
 ---
 
 ## Challenge Solution Overview
@@ -127,13 +129,13 @@ curl -X POST \
 
 #### Example Commands
 
-**Basic extraction**:
+**Basic extraction** (available: Web UI, cURL, Swagger UI):
 ```bash
-curl -X POST -F "image=@invoice.jpg" \
+curl -X POST -F "image=@testimages/invoice.jpg" \
   https://ocr-api-663394155406.asia-southeast1.run.app/extract-text
 ```
 
-**Batch processing** (10 images max):
+**Batch processing** (cURL & Swagger UI only - NOT available in web frontend):
 ```bash
 curl -X POST \
   -F "images=@invoice1.jpg" \
@@ -141,6 +143,8 @@ curl -X POST \
   -F "images=@note.jpg" \
   https://ocr-api-663394155406.asia-southeast1.run.app/batch-extract
 ```
+
+> **Important**: Batch processing is accessible via cURL commands and the Swagger UI at `/docs`, but the web interface frontend currently supports single-image extraction only. For batch processing, use the API directly with cURL or access the `/batch-extract` endpoint through Swagger UI.
 
 **Check health**:
 ```bash
@@ -282,6 +286,38 @@ gcloud run deploy ocr-api \
 - Environment variables configured at deployment
 - Service account with Vision API permissions
 - Region: asia-southeast1 (low latency for Asia)
+
+### 3.5. Frontend vs API Capabilities
+
+**[IMPORTANT] Key Distinction**: The web interface and API have different feature sets.
+
+| Feature | Web UI | cURL/API | Swagger UI |
+|---------|--------|----------|-----------|
+| Single Image Extract | YES | YES | YES |
+| Batch Processing | NO | YES | YES |
+| Health Check | YES | YES | YES |
+
+**Web Interface**:
+- Simple, user-friendly single-image upload
+- Perfect for occasional users
+- Instant visual feedback
+- Location: https://ocr-api-663394155406.asia-southeast1.run.app/
+
+**API Access** (cURL):
+- Full feature set including batch processing
+- Supports up to 10 images in a single request
+- Better for automation and bulk processing
+- Example:
+  ```bash
+  curl -X POST -F "images=@testimages/invoice.jpg" -F "images=@testimages/receipt.jpg" \
+    https://ocr-api-663394155406.asia-southeast1.run.app/batch-extract
+  ```
+
+**Interactive Documentation** (Swagger UI):
+- Full API documentation
+- Try all endpoints directly in browser
+- Test batch processing interactively
+- Location: https://ocr-api-663394155406.asia-southeast1.run.app/docs
 
 ### 4. GitHub Repository
 
@@ -651,10 +687,12 @@ BATCH_RATE_LIMIT_PER_MINUTE=10
 - Thread-safe implementation
 - **Cost savings**: ~50% Vision API reduction
 
-**6. Batch Processing Endpoint**:
+**6. Batch Processing Endpoint** (API/cURL only):
 ```bash
 POST /batch-extract
 # Upload up to 10 images at once
+# Available via: cURL commands, Swagger UI at /docs
+# Note: Not available in web frontend UI
 ```
 
 **7. Image Metadata**:

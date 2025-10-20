@@ -4,6 +4,8 @@ A production-ready serverless OCR API deployed on Google Cloud Run. Extract text
 
 **Live API**: https://ocr-api-663394155406.asia-southeast1.run.app
 
+> **Working Directory**: All commands in this guide should be run from the project root: `/Users/ehz/flexbone`
+
 ---
 
 ## Quick Start
@@ -32,28 +34,38 @@ curl https://ocr-api-663394155406.asia-southeast1.run.app/health
 ## Features
 
 - **OCR**: Extract text from JPG, PNG, GIF, WebP, BMP images
-- **Batch Processing**: Process up to 10 images at once
+- **Batch Processing**: Process up to 10 images at once (CLI/API only - see note below)
 - **Smart Caching**: LRU cache with 1000 entries, 1-hour TTL (~50% cost savings)
 - **Multi-Language**: Auto-detects 50+ languages
 - **Production-Ready**: Serverless, auto-scales, structured logging
+
+> **Note on Batch Processing**: Batch processing is available via cURL command-line requests and the Swagger UI at `/docs`. The web interface frontend currently supports single-image extraction only.
 
 ---
 
 ## API Endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/extract-text` | POST | Extract text from single image |
-| `/batch-extract` | POST | Extract text from multiple images |
-| `/health` | GET | Health check |
+| Endpoint | Method | Purpose | Availability |
+|----------|--------|---------|---------------|
+| `/extract-text` | POST | Extract text from single image | Web UI, cURL, Swagger UI |
+| `/batch-extract` | POST | Extract text from multiple images (10 max) | cURL, Swagger UI only |
+| `/health` | GET | Health check | All |
 
-**Example**:
+**Single Image Extraction (available everywhere)**:
 ```bash
 curl -X POST -F "image=@testimages/invoice.jpg" \
   https://ocr-api-663394155406.asia-southeast1.run.app/extract-text
 ```
 
-**Response**:
+**Batch Processing (cURL & Swagger UI only)**:
+```bash
+curl -X POST \
+  -F "images=@testimages/invoice.jpg" \
+  -F "images=@testimages/receipt.jpg" \
+  https://ocr-api-663394155406.asia-southeast1.run.app/batch-extract
+```
+
+**Single Image Response**:
 ```json
 {
   "success": true,
@@ -64,6 +76,34 @@ curl -X POST -F "image=@testimages/invoice.jpg" \
     "cached": true,
     "language": "en"
   }
+}
+```
+
+**Batch Processing Response**:
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "index": 0,
+      "filename": "invoice.jpg",
+      "success": true,
+      "text": "INVOICE\nTotal: $125.00",
+      "confidence": 0.98,
+      "metadata": {"cached": true, "language": "en"}
+    },
+    {
+      "index": 1,
+      "filename": "receipt.jpg",
+      "success": true,
+      "text": "RECEIPT\nTotal: $45.99",
+      "confidence": 0.96,
+      "metadata": {"cached": false, "language": "en"}
+    }
+  ],
+  "total_images": 2,
+  "processing_time_ms": 375,
+  "failed_count": 0
 }
 ```
 
