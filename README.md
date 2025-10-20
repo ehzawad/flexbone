@@ -2,7 +2,7 @@
 
 A production-ready serverless OCR API deployed on Google Cloud Run. Extract text from images with intelligent caching and structured logging.
 
-**Live API**: `https://ocr-api-663394155406.asia-southeast1.run.app`
+**Live API**: https://ocr-api-663394155406.asia-southeast1.run.app
 
 ---
 
