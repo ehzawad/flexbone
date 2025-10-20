@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+
+# Temporary files
+*.log
+.DS_Store
+.vscode/
+
+# Environment
+.env
+.env.local
+
+# Google Cloud
+*.json
+!requirements.txt
+
+# Cache
+.cache/

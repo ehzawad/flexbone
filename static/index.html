@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Text Extractor - AI-Powered Text Recognition</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #999;
+            font-size: 16px;
+        }
+        
+        .upload-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .upload-section:hover {
+            border-color: rgba(102, 126, 234, 0.6);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        
+        .upload-section.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-area {
+            text-align: center;
+            padding: 40px;
+            cursor: pointer;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .upload-subtext {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .file-info {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            border-left: 4px solid #667eea;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results-container {
+            display: none;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .results-container.show {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        @media (max-width: 968px) {
+            .results-container.show {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .result-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .stat-label {
+            color: #999;
+            margin-right: 5px;
+        }
+        
+        .stat-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .extracted-text {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .extracted-text.empty {
+            color: #666;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .json-display {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #d4d4d4;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .copy-btn, .download-btn {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover, .download-btn:hover {
+            background: rgba(102, 126, 234, 0.3);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+        }
+        
+        .toast.show {
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast.success {
+            border-left: 4px solid #4caf50;
+        }
+        
+        .toast.error {
+            border-left: 4px solid #f44336;
+        }
+        
+        .toast.cache {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .footer-links {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: #764ba2;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OCR Text Extractor</h1>
+            <p class="subtitle">AI-powered text extraction from images - Supports JPG, PNG, GIF, WebP, BMP</p>
+        </header>
+        
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">UPLOAD</div>
+                <div class="upload-text">Click to upload or drag & drop</div>
+                <div class="upload-subtext">Supported: JPG, PNG, GIF, WebP, BMP (max 10MB)</div>
+                <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp">
+            </div>
+            
+            <div class="file-info" id="fileInfo"></div>
+            
+            <button class="btn" id="uploadBtn" disabled>Extract Text</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div style="color: #999;">Processing image...</div>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <div class="result-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Extracted Text</div>
+                </div>
+                
+                <div class="stats-row" id="statsRow"></div>
+                
+                <div class="extracted-text" id="extractedText">
+                    <div class="empty">Upload an image to extract text</div>
+                </div>
+            </div>
+            
+            <div class="result-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Raw JSON</div>
+                    <div>
+                        <button class="copy-btn" id="copyBtn">Copy</button>
+                        <button class="download-btn" id="downloadBtn">Download</button>
+                    </div>
+                </div>
+                
+                <div class="json-display" id="jsonDisplay"></div>
+            </div>
+        </div>
+        
+        <div class="footer-links">
+            <a href="/docs" target="_blank">API Documentation (Swagger)</a>
+            <a href="/redoc" target="_blank">API Documentation (ReDoc)</a>
+            <a href="/health" target="_blank">Health Check</a>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        const uploadSection = document.getElementById('uploadSection');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const loading = document.getElementById('loading');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const extractedText = document.getElementById('extractedText');
+        const jsonDisplay = document.getElementById('jsonDisplay');
+        const statsRow = document.getElementById('statsRow');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const toast = document.getElementById('toast');
+        
+        let selectedFile = null;
+        let lastResult = null;
+        
+        const ALLOWED_TYPES = [
+            'image/jpeg',
+            'image/jpg', 
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/bmp'
+        ];
+        
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+        
+        function validateFile(file) {
+            if (!file) {
+                showToast('No file selected', 'error');
+                return false;
+            }
+            
+            if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+                showToast(`Invalid file type.\n\nSupported formats: JPG, PNG, GIF, WebP, BMP\n\nPlease upload an image file.`, 'error');
+                fileInput.value = '';
+                return false;
+            }
+            
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                showToast(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB\n\nMaximum size: 10MB`, 'error');
+                fileInput.value = '';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        function handleFile(file) {
+            if (!validateFile(file)) {
+                return;
+            }
+            
+            selectedFile = file;
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            fileInfo.innerHTML = `
+                <strong>${file.name}</strong><br>
+                Size: ${sizeMB} MB - Type: ${file.type}
+            `;
+            fileInfo.classList.add('show');
+            uploadBtn.disabled = false;
+        }
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+        
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(file);
+            }
+        });
+        
+        // Upload and process
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            
+            uploadBtn.disabled = true;
+            loading.classList.add('show');
+            resultsContainer.classList.remove('show');
+            
+            try {
+                const response = await fetch('/extract-text', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                lastResult = data;
+                
+                if (response.ok && data.success) {
+                    displayResults(data);
+                    
+                    // Check if cached
+                    if (data.metadata && data.metadata.cached) {
+                        showToast(`[CACHED] Using cached result! Saved processing time`, 'cache');
+                    } else {
+                        showToast('Text extracted successfully!', 'success');
+                    }
+                } else {
+                    showToast(`Error: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showToast(`Error: ${error.message}`, 'error');
+            } finally {
+                loading.classList.remove('show');
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        function displayResults(data) {
+            // Stats
+            const stats = [];
+            
+            if (data.metadata) {
+                if (data.metadata.language) {
+                    stats.push(`<div class="stat-card"><span class="stat-label">Language:</span><span class="stat-value">${data.metadata.language.toUpperCase()}</span></div>`);
+                }
+                if (data.metadata.image_width && data.metadata.image_height) {
+                    stats.push(`<div class="stat-card"><span class="stat-label">Size:</span><span class="stat-value">${data.metadata.image_width}x${data.metadata.image_height}</span></div>`);
+                }
+                if (data.metadata.cached !== undefined) {
+                    const cacheStatus = data.metadata.cached ? '[CACHED]' : '[FRESH]';
+                    stats.push(`<div class="stat-card"><span class="stat-label">Status:</span><span class="stat-value">${cacheStatus}</span></div>`);
+                }
+            }
+            
+            stats.push(`<div class="stat-card"><span class="stat-label">Time:</span><span class="stat-value">${data.processing_time_ms}ms</span></div>`);
+            
+            if (data.metadata && data.metadata.has_text !== undefined) {
+                const textStatus = data.metadata.has_text ? 'Text Found' : 'No Text';
+                stats.push(`<div class="stat-card"><span class="stat-label">Detection:</span><span class="stat-value">${textStatus}</span></div>`);
+            }
+            
+            statsRow.innerHTML = stats.join('');
+            
+            // Extracted text
+            if (data.text && data.text.trim()) {
+                extractedText.textContent = data.text;
+                extractedText.classList.remove('empty');
+            } else {
+                extractedText.innerHTML = '<div class="empty">No text found in image</div>';
+                extractedText.classList.add('empty');
+            }
+            
+            // JSON
+            jsonDisplay.textContent = JSON.stringify(data, null, 2);
+            
+            resultsContainer.classList.add('show');
+        }
+        
+        // Copy JSON
+        copyBtn.addEventListener('click', () => {
+            if (lastResult) {
+                navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+                showToast('JSON copied to clipboard!', 'success');
+            }
+        });
+        
+        // Download JSON
+        downloadBtn.addEventListener('click', () => {
+            if (lastResult) {
+                const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ocr-result-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('JSON downloaded!', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
